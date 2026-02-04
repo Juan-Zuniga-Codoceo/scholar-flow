@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 class MedicalLicense(BaseModel):
     # Aceptamos el RUT tal cual viene, luego lo limpiamos
+    nombre_profesor: str = Field(..., description="Full name of the professor")
     rut_profesor: str = Field(..., description="RUT of the professor")
     diagnostico_codigo: Optional[str] = Field(None, description="Diagnostic code")
     dias_reposo: int = Field(..., description="Number of leave days")

@@ -48,6 +48,7 @@ SYSTEM_PROMPT = """
 Eres un asistente administrativo escolar. Tu tarea es procesar licencias médicas adjuntas en formato PDF o Imagen.
 Extrae EXCLUSIVAMENTE los siguientes campos en formato JSON estricto, respetando este esquema:
 {
+  "nombre_profesor": "string",
   "rut_profesor": "string",
   "diagnostico_codigo": "string | null", 
   "dias_reposo": int,

@@ -31,6 +31,18 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+                    {/* Nombre Profesor */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Nombre Profesor</label>
+                        <input
+                            type="text"
+                            name="nombre_profesor"
+                            value={formData.nombre_profesor || ""}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                    </div>
+
                     {/* RUT Professor */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">RUT Profesor</label>
