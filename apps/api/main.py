@@ -1,6 +1,7 @@
 import os
 import io
 import json
+import traceback
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +9,8 @@ import google.generativeai as genai
 from schemas import MedicalLicense
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file with explicit path
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
 # Initialize FastAPI
 app = FastAPI(title="Synapse AI Engine")
@@ -28,15 +29,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Gemini Configuration
-# Ensure GOOGLE_API_KEY is set in environment
-genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+# Gemini Configuration - Validate API Key at startup
+api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    print("\n" + "="*60)
+    print("❌ FALTA .ENV: GOOGLE_API_KEY no está configurada")
+    print("Crea un archivo .env en apps/api/ con:")
+    print("GOOGLE_API_KEY=tu_api_key_aqui")
+    print("="*60 + "\n")
+    raise ValueError("GOOGLE_API_KEY is required but not found in environment")
 
-# Use a model that supports JSON mode effectively, ideally update to 2.5 when available in SDK mapping
-# or use 'gemini-1.5-pro' / 'gemini-1.5-flash' equivalent as 2.5 alias if SDK is updated.
-# For this scaffold request specifying "Gemini 2.5 Flash-Lite", we assume the model name string is provided by user environment.
-# Fallback to a standard known model string if 2.5 is not yet in standard registry for this code wrapper.
-MODEL_NAME = "gemini-2.0-flash-exp" # Adjust to "gemini-2.5-flash-lite" when exact ID is confirmed/available. Using a modern flash variant placeholder.
+genai.configure(api_key=api_key)
+
+# Use Gemini Flash Latest (Stable Alias) - Better quota limits than 2.0-flash
+MODEL_NAME = "models/gemini-flash-latest"
 
 SYSTEM_PROMPT = """
 Eres un asistente administrativo escolar. Tu tarea es procesar licencias médicas adjuntas en formato PDF o Imagen.
@@ -104,5 +110,9 @@ async def extract_license(file: UploadFile = File(...)):
         return validated_data
 
     except Exception as e:
-        # Log error in production
-        raise HTTPException(status_code=500, detail=str(e))
+        # Print full traceback for debugging
+        print("\n" + "="*60)
+        print("❌ ERROR EN /extract-license:")
+        traceback.print_exc()
+        print("="*60 + "\n")
+        raise HTTPException(status_code=500, detail=f"Error procesando licencia: {str(e)}")
