@@ -16,9 +16,36 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
         setFormData((prev: any) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm(formData);
+        setIsSaving(true);
+
+        try {
+            // Persist to Backend/Supabase via API
+            const response = await fetch("http://localhost:8000/licenses", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || "Error al guardar");
+            }
+
+            const result = await response.json();
+
+            // Pass the persisted data back to parent
+            onConfirm(result);
+
+        } catch (error) {
+            console.error("Error saving license:", error);
+            alert("Error al guardar la licencia: " + error);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -40,6 +67,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.nombre_profesor || ""}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -52,6 +80,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.rut_profesor || ""}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -64,6 +93,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.emitido_por || ""}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -76,6 +106,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.fecha_inicio || ""}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -87,6 +118,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.fecha_fin || ""}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -99,6 +131,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             value={formData.dias_reposo || 0}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -112,6 +145,7 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                             onChange={handleChange}
                             placeholder="J00"
                             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50"
+                            disabled={isSaving}
                         />
                     </div>
 
@@ -121,15 +155,23 @@ export default function LicenseReview({ initialData, onConfirm, onCancel }: Lice
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        disabled={isSaving}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm"
+                        disabled={isSaving}
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow-sm disabled:opacity-50 flex items-center gap-2"
                     >
-                        Confirmar y Buscar Reemplazo
+                        {isSaving ? (
+                            <>
+                                <span className="animate-spin">⏳</span> Guardando...
+                            </>
+                        ) : (
+                            "Confirmar y Buscar Reemplazo"
+                        )}
                     </button>
                 </div>
             </form>

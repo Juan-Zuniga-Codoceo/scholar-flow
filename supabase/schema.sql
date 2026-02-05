@@ -67,5 +67,40 @@ CREATE POLICY "Admins can update organization"
   );
 
 -- Note: Insert policies usually handled by invitation/signup flows or edge functions
--- allowing direct insert might be dangerous depending on the signup flow.
--- For now, we assume org creation happens via specific secure procedures.
+-- 4. Medical Licenses Table
+CREATE TABLE medical_licenses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  organization_id UUID NOT NULL REFERENCES organizations(id),
+  user_id UUID REFERENCES users(id), -- User who uploaded the license
+  professor_name TEXT NOT NULL,
+  professor_rut TEXT NOT NULL,
+  diagnosis_code TEXT,       -- Optional/Private
+  days_count INTEGER NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  health_entity TEXT,        -- Isapre/Fonasa/Compin
+  status TEXT NOT NULL DEFAULT 'pending_replacement', 
+  check (status in ('pending_replacement', 'covered', 'rejected')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Indexes
+CREATE INDEX idx_licenses_org_id ON medical_licenses(organization_id);
+CREATE INDEX idx_licenses_status ON medical_licenses(status);
+
+-- RLS for Medical Licenses
+ALTER TABLE medical_licenses ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can view licenses from their own organization
+CREATE POLICY "Users can view org licenses"
+  ON medical_licenses
+  FOR SELECT
+  USING (organization_id = get_auth_organization_id());
+
+-- Policy: Users can create licenses for their own organization
+-- Note: In a real scenario, we would validate that the user belongs to the org in the INSERT check
+-- For now, we rely on the API/Backend to enforce the correct organization_id or the constraint
+CREATE POLICY "Users can create org licenses"
+  ON medical_licenses
+  FOR INSERT
+  WITH CHECK (organization_id = get_auth_organization_id());

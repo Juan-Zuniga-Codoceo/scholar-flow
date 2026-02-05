@@ -8,9 +8,25 @@ from fastapi.middleware.cors import CORSMiddleware
 import google.generativeai as genai
 from schemas import MedicalLicense
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
 # Load environment variables from .env file with explicit path
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
+
+# Supabase Configuration
+# NOTE: These values must be set in .env for this to work
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY") # Use Service Role Key for backend
+
+supabase: Optional[Client] = None
+
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"⚠️ Warning: Failed to initialize Supabase: {e}")
+else:
+    print("⚠️ Warning: SUPABASE_URL or SUPABASE_KEY not found in environment")
 
 # Initialize FastAPI
 app = FastAPI(title="Synapse AI Engine")
@@ -117,3 +133,62 @@ async def extract_license(file: UploadFile = File(...)):
         traceback.print_exc()
         print("="*60 + "\n")
         raise HTTPException(status_code=500, detail=f"Error procesando licencia: {str(e)}")
+
+@app.post("/licenses")
+async def create_license(license: MedicalLicense):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database connection not available")
+
+    try:
+        # 1. Get a valid Organization ID (MVP Hack: Get the first one found)
+        # In production, this would come from the authenticated user's session
+        org_res = supabase.table("organizations").select("id").limit(1).execute()
+        
+        if not org_res.data:
+             # Create a default org if none exists (Auto-scaffold for dev)
+             default_org = {
+                 "name": "Demo School",
+                 "slug": "demo-school",
+                 "plan_type": "free"
+             }
+             org_res = supabase.table("organizations").insert(default_org).execute()
+        
+        organization_id = org_res.data[0]['id']
+
+        # 2. Map Pydantic schema to Database Schema
+        data = license.model_dump()
+        
+        # Helper to serializar dates
+        def serialize_date(d):
+            return d.isoformat() if hasattr(d, 'isoformat') else d
+
+        # 3. Map to User's SQL Schema
+        # User defined schema:
+        # id, organization_id, user_id, professor_rut, professor_name, start_date, end_date, days_count, status, file_url, extracted_data
+        
+        db_payload = {
+            "organization_id": organization_id,
+            "professor_name": data['nombre_profesor'],
+            "professor_rut": data['rut_profesor'],
+            "days_count": data['dias_reposo'],
+            "start_date": serialize_date(data['fecha_inicio']),
+            "end_date": serialize_date(data['fecha_fin']),
+            "status": "pending", # User schema default
+            "extracted_data": {
+                "diagnosis_code": data.get('diagnostico_codigo'),
+                "health_entity": data['emitido_por'],
+                "full_extraction": json.loads(license.model_dump_json())
+            }
+        }
+
+        # 4. Insert into Supabase
+        response = supabase.table("medical_licenses").insert(db_payload).execute()
+        
+        return {"status": "success", "id": response.data[0]['id'], "data": response.data[0]}
+
+    except Exception as e:
+        print("\n" + "="*60)
+        print("❌ ERROR EN /licenses:")
+        traceback.print_exc()
+        print("="*60 + "\n")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
