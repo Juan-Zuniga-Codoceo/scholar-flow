@@ -5,10 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
 def generate_rut():
-    numero = random.randint(10000000, 25000000)
-    # Algoritmo simplificado solo para visualización, no valida mod11 real
-    dv = str(random.randint(0, 9)) 
-    return f"{numero:,}".replace(",", ".") + "-" + dv
+    return "18239055-3"
 
 def create_fake_license(filename="licencia_test.pdf"):
     c = canvas.Canvas(filename, pagesize=LETTER)

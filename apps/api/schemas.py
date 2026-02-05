@@ -36,3 +36,6 @@ class MedicalLicense(BaseModel):
             # Si falla, devolvemos el string original para que el Frontend lo muestre y el usuario corrija
             return v 
         return v
+
+class AssignmentRequest(BaseModel):
+    professor_id: str = Field(..., description="UUID of the substitute professor")

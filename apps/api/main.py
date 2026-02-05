@@ -183,8 +183,57 @@ async def create_license(license: MedicalLicense):
 
         # 4. Insert into Supabase
         response = supabase.table("medical_licenses").insert(db_payload).execute()
+        created_license = response.data[0]
+
+        # 5. Execute Replacement Matching Logic
+        matches = []
+        try:
+            # A. Find the absent professor to get their subjects
+            absent_prof_res = supabase.table("professors")\
+                .select("*")\
+                .eq("organization_id", organization_id)\
+                .eq("rut", data['rut_profesor'])\
+                .execute()
+            
+            if absent_prof_res.data:
+                absent_prof = absent_prof_res.data[0]
+                absent_subjects = set(absent_prof.get('subjects', []) or [])
+
+                if absent_subjects:
+                    # B. Find available substitutes in the same org
+                    # We fetch potential candidates and filter in Python for array overlap flexibility
+                    candidates_res = supabase.table("professors")\
+                        .select("*")\
+                        .eq("organization_id", organization_id)\
+                        .neq("id", absent_prof['id'])\
+                        .eq("is_available", True)\
+                        .execute()
+                    
+                    for cand in candidates_res.data:
+                        cand_subjects = set(cand.get('subjects', []) or [])
+                        # Check for intersection (overlap)
+                        if not absent_subjects.isdisjoint(cand_subjects):
+                            matches.append({
+                                "id": cand['id'],
+                                "full_name": cand['full_name'],
+                                "rut": cand['rut'],
+                                "subjects": cand['subjects'],
+                                "contract_hours": cand['contract_hours']
+                            })
+            
+            print(f"✅ Match Algorithm: Found {len(matches)} candidates for {data['rut_profesor']}")
+
+        except Exception as match_error:
+            print(f"⚠️ Match Algorithm Failed: {match_error}")
+            traceback.print_exc()
+            # Non-blocking error, we still return success for the license creation
         
-        return {"status": "success", "id": response.data[0]['id'], "data": response.data[0]}
+        return {
+            "status": "success", 
+            "id": created_license['id'], 
+            "data": created_license,
+            "matches": matches
+        }
 
     except Exception as e:
         print("\n" + "="*60)
@@ -192,3 +241,69 @@ async def create_license(license: MedicalLicense):
         traceback.print_exc()
         print("="*60 + "\n")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@app.get("/licenses")
+async def get_licenses():
+    if not supabase:
+         raise HTTPException(status_code=503, detail="Database connection not available")
+
+    try:
+        # MVP Hack: Get the first organization found to filter
+        org_res = supabase.table("organizations").select("id").limit(1).execute()
+        if not org_res.data:
+            return []
+            
+        organization_id = org_res.data[0]['id']
+
+        response = supabase.table("medical_licenses")\
+            .select("*")\
+            .eq("organization_id", organization_id)\
+            .order("created_at", desc=True)\
+            .execute()
+            
+        return response.data
+
+    except Exception as e:
+        print(f"❌ Error fetching licenses: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+from services.whatsapp import send_replacement_notification
+from schemas import AssignmentRequest
+
+@app.post("/licenses/{license_id}/assign")
+async def assign_replacement(license_id: str, request: AssignmentRequest):
+    if not supabase:
+         raise HTTPException(status_code=503, detail="Database connection not available")
+
+    try:
+        professor_id = request.professor_id
+        
+        # 1. Update the license status and replacement_professor_id
+        update_res = supabase.table("medical_licenses")\
+            .update({
+                "status": "covered",
+                "replacement_professor_id": professor_id
+            })\
+            .eq("id", license_id)\
+            .execute()
+        
+        if not update_res.data:
+            raise HTTPException(status_code=404, detail="License not found")
+
+        # 2. Get Professor Details for Notification
+        prof_res = supabase.table("professors").select("*").eq("id", professor_id).execute()
+        if prof_res.data:
+            prof = prof_res.data[0]
+            # Mock phone number (in real app, this would come from DB)
+            phone = "+56912345678" 
+            message = f"Hola {prof['full_name']}, se te ha asignado un reemplazo. Por favor revisa tu portal."
+            
+            # 3. Send Notification
+            send_replacement_notification(phone, message)
+
+        return {"status": "success", "message": "Reemplazo asignado y notificado"}
+
+    except Exception as e:
+        print(f"❌ Error assigning replacement: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
