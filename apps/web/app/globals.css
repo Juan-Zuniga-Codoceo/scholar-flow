@@ -1,3 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Scholar Flow Design Tokens ─────────────────────────────────────────── */
+:root {
+  /* Brand colors extraídos del logo */
+  --sf-navy:       #1E3A5F;   /* Azul marino oscuro (tipografía del logo) */
+  --sf-teal:       #2A9D8F;   /* Teal/cyan del búho */
+  --sf-blue:       #264B8A;   /* Azul medio de las ramas */
+  --sf-teal-light: #48B8AA;   /* Teal más claro */
+  --sf-green:      #52B788;   /* Verde hojas */
+  --sf-green-light:#80C9A4;   /* Verde hojas claro */
+  --sf-bg:         #F5F7FA;   /* Fondo general */
+  --sf-surface:    #FFFFFF;   /* Cards */
+  --sf-border:     #E2E8F0;   /* Borders */
+  --sf-muted:      #94A3B8;   /* Texto secundario */
+  --sf-danger:     #E53E3E;
+
+  /* Gradientes de marca */
+  --sf-gradient: linear-gradient(135deg, var(--sf-navy) 0%, var(--sf-blue) 40%, var(--sf-teal) 100%);
+  --sf-gradient-light: linear-gradient(135deg, var(--sf-blue) 0%, var(--sf-teal) 100%);
+  --sf-gradient-green: linear-gradient(135deg, var(--sf-teal) 0%, var(--sf-green) 100%);
+}
+
+/* ─── Base Resets ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-family: 'Inter', sans-serif; }
+
+body {
+  background-color: var(--sf-bg);
+  color: var(--sf-navy);
+  min-height: 100vh;
+}
+
+/* ─── Scrollbar estilo Scholar Flow ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--sf-teal) 0%, var(--sf-blue) 100%);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--sf-navy); }
+
+/* ─── Utility classes ─────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Fondos de marca */
+  .bg-sf-navy       { background-color: var(--sf-navy); }
+  .bg-sf-teal       { background-color: var(--sf-teal); }
+  .bg-sf-blue       { background-color: var(--sf-blue); }
+  .bg-sf-green      { background-color: var(--sf-green); }
+  .bg-sf-bg         { background-color: var(--sf-bg); }
+  .bg-sf-surface    { background-color: var(--sf-surface); }
+  .bg-sf-gradient   { background: var(--sf-gradient); }
+  .bg-sf-gradient-light { background: var(--sf-gradient-light); }
+  .bg-sf-gradient-green { background: var(--sf-gradient-green); }
+
+  /* Textos de marca */
+  .text-sf-navy     { color: var(--sf-navy); }
+  .text-sf-teal     { color: var(--sf-teal); }
+  .text-sf-blue     { color: var(--sf-blue); }
+  .text-sf-green    { color: var(--sf-green); }
+  .text-sf-muted    { color: var(--sf-muted); }
+
+  /* Borders */
+  .border-sf        { border-color: var(--sf-border); }
+  .border-sf-teal   { border-color: var(--sf-teal); }
+  .border-sf-navy   { border-color: var(--sf-navy); }
+
+  /* Texto con gradiente de marca */
+  .text-sf-gradient {
+    background: var(--sf-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .text-sf-gradient-light {
+    background: var(--sf-gradient-light);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Sombras de marca */
+  .shadow-sf-navy   { box-shadow: 0 4px 24px rgba(30, 58, 95, 0.25); }
+  .shadow-sf-teal   { box-shadow: 0 4px 24px rgba(42, 157, 143, 0.30); }
+
+  /* Botón primario Scholar Flow */
+  .btn-sf-primary {
+    background: var(--sf-gradient-light);
+    color: white;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(42, 157, 143, 0.3);
+  }
+  .btn-sf-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(42, 157, 143, 0.4);
+  }
+  .btn-sf-primary:disabled {
+    opacity: 0.55;
+    transform: none;
+    cursor: not-allowed;
+  }
+
+  /* Card premium Scholar Flow */
+  .card-sf {
+    background: var(--sf-surface);
+    border: 1px solid var(--sf-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 12px rgba(30, 58, 95, 0.06);
+  }
+
+  /* Input estilo Scholar Flow */
+  .input-sf {
+    background: #F8FAFC;
+    border: 1.5px solid var(--sf-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--sf-navy);
+    transition: all 0.15s ease;
+    width: 100%;
+  }
+  .input-sf::placeholder { color: var(--sf-muted); }
+  .input-sf:focus {
+    outline: none;
+    border-color: var(--sf-teal);
+    box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.15);
+    background: white;
+  }
+
+  /* Badge de estado */
+  .badge-active {
+    background: rgba(82, 183, 136, 0.12);
+    color: #2D8A5F;
+    border: 1px solid rgba(82, 183, 136, 0.3);
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .badge-pending {
+    background: rgba(245, 158, 11, 0.10);
+    color: #92400E;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .badge-danger {
+    background: rgba(229, 62, 62, 0.08);
+    color: #C53030;
+    border: 1px solid rgba(229, 62, 62, 0.2);
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  /* Patrones de fondo escolar */
+  .bg-notebook-grid {
+    background-size: 28px 28px;
+    background-image: 
+      linear-gradient(to right, rgba(42, 157, 143, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(42, 157, 143, 0.08) 1px, transparent 1px);
+  }
+  .bg-dots-pattern {
+    background-size: 18px 18px;
+    background-image: radial-gradient(rgba(42, 157, 143, 0.15) 1.5px, transparent 1.5px);
+  }
+
+  /* Sidebar Scholar Flow */
+  .sidebar-sf {
+    background: linear-gradient(180deg, var(--sf-navy) 0%, #162D4A 100%);
+  }
+  .sidebar-item {
+    border-radius: 0.75rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .sidebar-item:hover {
+    background: rgba(255,255,255,0.07);
+    color: white;
+  }
+  .sidebar-item.active {
+    background: var(--sf-gradient-light);
+    color: white;
+    box-shadow: 0 4px 12px rgba(42, 157, 143, 0.35);
+    transform: translateX(2px);
+  }
+
+  /* Animaciones sutiles */
+  @keyframes sf-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-sf-fade { animation: sf-fade-in 0.3s ease-out forwards; }
+
+  @keyframes sf-pulse-teal {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+  }
+  .animate-sf-pulse { animation: sf-pulse-teal 1.8s ease-in-out infinite; }
+}

@@ -1,0 +1,32 @@
+Manual Oficial de Soporte y Base de Conocimientos - Scholar-Flow
+
+1. Descripción General del Sistema
+Scholar-Flow es un software como servicio (SaaS) moderno y premium diseñado para la administración de establecimientos educativos (colegios, liceos y escuelas). Su propósito principal es automatizar y optimizar la planificación de la malla horaria escolar y la gestión inteligente de reemplazos por licencias médicas mediante el uso de Inteligencia Artificial (Gemini).
+
+2. Nómina de Profesores y Gestión de Docentes
+Los administradores pueden gestionar el personal docente desde el panel "Profesores" (/dashboard/profesores).
+- Ficha del Docente: Contiene nombre, RUT, especialidades o asignaturas (e.g. Matemáticas, Física), correo electrónico de contacto, y teléfono.
+- Disponibilidad para Reemplazos: Cada profesor cuenta con un estado "Disponible para reemplazos" (is_available). Si está desactivado, el motor de IA lo excluirá de cualquier sugerencia automática.
+- Tipos de Contrato: Los docentes pueden contratarse bajo tres modalidades: Planta, Reemplazo u Honorarios. Cada uno cuenta con un número de horas semanales definidas en su contrato.
+- Carga de Horas: El sistema lleva control de las horas asignadas frente a las horas del contrato para evitar sobrecarga laboral.
+
+3. Gestión de Licencias Médicas y Extracción por IA
+El módulo de "Licencias Médicas" (/dashboard/licencias) automatiza la lectura y el procesamiento de licencias físicas.
+- Carga de Documento: Los archivos se suben en formato PDF o imagen. El backend los almacena físicamente en la carpeta 'uploads/' con un identificador único (UUID).
+- Extracción de Datos: El motor Gemini 2.5 Flash-Lite extrae automáticamente el RUT del profesor, nombre completo, código de diagnóstico, cantidad de días de licencia, fechas de vigencia y entidad emisora (FONASA / Isapre). El administrador puede revisar y corregir los datos antes de guardarlos.
+- Historial y Originales: La tabla de historial incluye el enlace 'Ver original' para descargar o previsualizar el documento subido en cualquier momento.
+
+4. Motor de Recomendación de Suplentes e IA
+Al registrar una licencia médica, el sistema busca de forma activa los mejores candidatos para cubrir las horas del docente ausente.
+- Algoritmo de Sugerencia: Prioriza según coincidencia exacta de asignaturas de especialidad, que el profesor tenga habilitada su disponibilidad para reemplazos, y ordena de forma ascendente por horas contratadas restantes para distribuir equitativamente la carga de trabajo.
+- Enlaces Rápidos: En la tabla de licencias, hacer clic sobre el nombre del docente ausente o el docente suplente redirige al usuario a la nómina general (/dashboard/profesores?view=[Nombre]) y abre de forma automática su ficha detallada de carga horaria en tiempo real.
+
+5. Planificación e IA de Horarios
+El panel "Horarios (IA)" (/dashboard/horarios) administra los bloques y la distribución de clases.
+- Cursos y Ramos: Define la malla curricular y la cantidad de horas semanales por asignatura para cada curso (ej: 1° Medio A).
+- Detección de Colisiones: El planificador alerta en tiempo real si existe un tope de horario (un profesor asignado a dos salas/cursos en el mismo bloque) o si se exceden las horas contractuales del profesor.
+
+6. Modelo de Suscripciones y Facturación (Pasarela Flow)
+Scholar-Flow utiliza un modelo de cobro SaaS basado en el número de usuarios activos a una tarifa de 3,000 CLP mensuales por usuario, con un período de prueba gratuito de 14 días.
+- Cuenta Demo Gratuita: La organización de pruebas oficial con UUID '00000000-0000-0000-0000-000000000000' (Colegio Demo) tiene configurada la bandera 'is_demo = true' en la base de datos PostgreSQL. Esta cuenta cuenta con acceso premium de por vida totalmente gratis y está exenta de bloqueos por pasarela de pago.
+- Contacto de Soporte Técnico Humano: Para consultas que requieran soporte técnico humano adicional, los usuarios pueden comunicarse directamente por WhatsApp al número de soporte oficial +56940413646.

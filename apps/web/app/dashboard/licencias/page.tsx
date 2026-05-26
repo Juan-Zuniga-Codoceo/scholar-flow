@@ -3,6 +3,7 @@
 import { useState } from "react";
 import LicenseUploader from "@/components/dashboard/license-uploader";
 import LicenseReview from "@/components/dashboard/license-review";
+import { LicenseList } from "@/components/dashboard/license-list";
 
 export default function LicensePage() {
     const [step, setStep] = useState<"upload" | "review">("upload");
@@ -15,7 +16,7 @@ export default function LicensePage() {
 
     const handleConfirm = (finalData: any) => {
         console.log("Licencia Confirmada:", finalData);
-        alert("¡Licencia Guardada! (Lógica de reemplazo pendiente)");
+        alert("¡Licencia Guardada!");
         // Reset flow
         setStep("upload");
         setLicenseData(null);
@@ -27,7 +28,7 @@ export default function LicensePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8 font-sans">
+        <div className="min-h-screen bg-slate-50/50 bg-notebook-grid p-8 font-sans">
             <header className="mb-8 max-w-4xl mx-auto">
                 <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Gestión de Licencias Médicas</h1>
                 <p className="text-gray-500 mt-2">
@@ -35,11 +36,17 @@ export default function LicensePage() {
                 </p>
             </header>
 
-            <main className="max-w-4xl mx-auto">
+            <main className="max-w-4xl mx-auto space-y-12">
                 {step === "upload" && (
-                    <div className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
-                        <LicenseUploader onExtractionComplete={handleExtractionComplete} />
-                    </div>
+                    <>
+                        <div className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
+                            <LicenseUploader onExtractionComplete={handleExtractionComplete} />
+                        </div>
+
+                        <div className="pt-8 border-t border-gray-200">
+                            <LicenseList />
+                        </div>
+                    </>
                 )}
 
                 {step === "review" && licenseData && (

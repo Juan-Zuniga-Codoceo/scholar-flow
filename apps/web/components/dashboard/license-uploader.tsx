@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 interface LicenseUploaderProps {
     onExtractionComplete: (data: any) => void;
 }
@@ -44,8 +46,7 @@ export default function LicenseUploader({ onExtractionComplete }: LicenseUploade
         formData.append("file", file);
 
         try {
-            // Assuming API is running on localhost:8000
-            const response = await fetch("http://localhost:8000/extract-license", {
+            const response = await fetch(`${API_URL}/extract-license`, {
                 method: "POST",
                 body: formData,
             });
