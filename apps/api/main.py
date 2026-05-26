@@ -19,7 +19,8 @@ from schemas import (
     AgendaItemCreate, AgendaItemUpdate, AgendaItemResponse,
     ExportScheduleRequest,
     BillingStatusResponse, PaySubscriptionRequest, PaySubscriptionResponse,
-    ChatQuery, SearchQuery, OrganizationUpdate
+    ChatQuery, SearchQuery, OrganizationUpdate,
+    ForgotPasswordRequest, ResetPasswordRequest
 )
 from fastapi.security import OAuth2PasswordBearer
 from auth import get_password_hash, verify_password, create_access_token, decode_access_token
