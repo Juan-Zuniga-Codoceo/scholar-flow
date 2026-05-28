@@ -4,9 +4,9 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
     UploadCloud, Check, RotateCcw, Palette, 
-    Image as ImageIcon, Sliders, Save, School, Info
+    Image as ImageIcon, Sliders, Save, School, Info, Trash2
 } from "lucide-react";
-import { getToken, getUser } from "@/lib/auth";
+import { getToken, getUser, clearSession } from "@/lib/auth";
 import { fetchBranding, applyBranding } from "@/lib/branding";
 
 const PRESET_PALETTES = [
@@ -29,6 +29,7 @@ export default function ConfigurarInstitucionPage() {
     // Status states
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
@@ -194,6 +195,49 @@ export default function ConfigurarInstitucionPage() {
         if (fileInputRef.current) fileInputRef.current.value = "";
         setError(null);
         setSuccess(null);
+    };
+
+    const handleDeleteOrg = async () => {
+        const confirmName = window.prompt(
+            `¿Estás absolutamente seguro de eliminar esta institución? Esta acción borrará TODOS los datos de profesores, horarios, licencias, pagos y usuarios.\n\nPara confirmar, escribe el nombre del colegio: "${name}"`
+        );
+        
+        if (confirmName !== name) {
+            if (confirmName !== null) {
+                alert("El nombre de la institución no coincide. Operación cancelada.");
+            }
+            return;
+        }
+
+        try {
+            setDeleting(true);
+            setError(null);
+            setSuccess(null);
+            const token = getToken();
+            if (!token) {
+                router.replace("/login");
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/api/organization`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.detail || "Error al eliminar la organización");
+            }
+
+            alert("Institución eliminada correctamente. Serás redirigido.");
+            clearSession();
+            router.push("/");
+        } catch (e: any) {
+            setError(e.message || "Ocurrió un error al intentar eliminar la organización.");
+            setDeleting(false);
+        }
     };
 
     if (loading) {
@@ -497,6 +541,35 @@ export default function ConfigurarInstitucionPage() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="bg-red-50/50 border border-red-200/60 rounded-2xl p-6 md:p-8 mt-8">
+                <h3 className="text-sm font-black text-red-700 flex items-center gap-2 mb-2">
+                    <Trash2 className="w-5 h-5 text-red-500" />
+                    Zona de Peligro: Eliminar Perfil del Colegio
+                </h3>
+                <p className="text-slate-500 text-xs mb-6 leading-relaxed">
+                    Al eliminar el perfil de la institución, se borrarán de forma permanente e irreversible todos los datos de los profesores, cursos, horarios, licencias médicas, historial de pagos y usuarios asociados de la base de datos.
+                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-red-50/75 border border-red-100 rounded-xl">
+                    <div>
+                        <p className="text-xs font-black text-red-950 font-sans">Eliminar permanentemente esta institución</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5 font-sans">Esta acción no se puede deshacer y revocará el acceso a todos los usuarios.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleDeleteOrg}
+                        disabled={deleting}
+                        className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+                    >
+                        {deleting ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            "Eliminar Colegio"
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

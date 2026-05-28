@@ -3334,6 +3334,24 @@ async def reset_organization_logo(payload: dict = Depends(get_current_user_paylo
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/organization", tags=["organization"])
+async def delete_organization(payload: dict = Depends(get_current_user_payload)):
+    org_id = payload.get("org_id")
+    role = payload.get("role")
+    
+    if not org_id:
+        raise HTTPException(status_code=400, detail="Organización no válida")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="No autorizado. Solo los administradores pueden eliminar la organización.")
+        
+    try:
+        execute_query("DELETE FROM organizations WHERE id = %s", (org_id,))
+        return {"status": "success", "message": "Organización y todos sus datos asociados han sido eliminados permanentemente."}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 
