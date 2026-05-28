@@ -132,3 +132,64 @@ graph TD
 *   **Soporte Humano Integrado**: Si la IA no conoce la respuesta verídica, habilita un botón directo para abrir chat de soporte oficial en WhatsApp (+56940413646).
 *   **Medalla de Verificación**: Las respuestas correctas muestran un badge indicando que fueron validadas y el porcentaje de fidelidad devuelto por el Juez de Veracidad.
 
+---
+
+## 7. Modelo de Facturación y Pasarela de Pagos (Mercado Pago)
+
+### Propósito
+Proporcionar un sistema de cobro dinámico tipo SaaS basado en licencias activas (seats), con cobros manuales para evitar retenciones de tarjetas automáticas no deseadas para las instituciones chilenas.
+
+### Endpoints y Arquitectura del Backend
+*   **`GET /billing/status`**: Obtiene el estado actual de la suscripción, fecha de vencimiento (`subscription_ends_at`), número de usuarios activos registrados y calcula el costo mensual total según la regla:
+    $$\text{Monto Mensual} = \text{Usuarios Activos} \times \text{Precio por Usuario}$$
+*   **`POST /billing/pay`**: Genera una **Preferencia de Pago** en la API de Mercado Pago (`/checkout/preferences`) utilizando el Token de Acceso (`MP_ACCESS_TOKEN`). Devuelve el punto de inicio de la pasarela de pagos (`init_point`) y registra el pago como `pending` en la tabla local de transacciones.
+*   **`POST /billing/webhook`**: Recibe notificaciones asíncronas automáticas (IPN) de Mercado Pago. Si el estado del pago es aprobado (`approved`/`2`), el webhook:
+    1. Marca la transacción como `completed` en la base de datos local.
+    2. Modifica el estado de suscripción de la organización a `active`.
+    3. Extiende la fecha de vencimiento por exactamente **30 días** (`subscription_ends_at = ahora + 30 días`).
+*   **`GET /billing/payments`**: Retorna el historial de transacciones realizadas por la organización para su control administrativo.
+
+### Modelo de Suscripción Manual (Prepago)
+*   **No Recurrente**: A diferencia de los cargos automáticos mensuales recurrentes, Scholar-Flow utiliza un modelo prepago manual. Las organizaciones pagan por un ciclo de 30 días de servicio.
+*   **Vencimiento Transparente**: Al cumplirse los 30 días de la última transacción sin renovación, el acceso a las herramientas críticas de planificación y asignación de horarios se bloquea automáticamente en la UI, requiriendo un pago manual del administrador para reanudar operaciones. No se requiere un botón para desuscribirse ya que no se ejecutan cargos automáticos periódicos.
+
+---
+
+## 8. Eliminación del Perfil de la Institución (Danger Zone)
+
+### Propósito
+Permitir a los administradores el borrado absoluto de sus organizaciones y de toda la información confidencial de sus profesores de forma permanente e inmediata, conforme a los estándares de privacidad y seguridad de datos.
+
+### Lógica de Control de Acceso y Backend (`DELETE /api/organization`)
+*   **Restricción de Rol**: El endpoint valida a través de JWT que el rol del usuario que invoca la acción sea `"admin"`. Cualquier otro rol recibe un código de error `403 Forbidden`.
+*   **Borrado en Cascada (Database Cascade)**: La base de datos PostgreSQL está estructurada con relaciones lógicas de clave foránea configuradas con la regla `ON DELETE CASCADE`. Al ejecutar la sentencia de borrado sobre la fila de la organización en la tabla `organizations`:
+    - El motor de base de datos elimina de manera automática e inmediata todos los registros relacionados en las tablas de `users`, `professors`, `courses`, `schedule_slots`, `medical_licenses` y `payments`.
+
+### Flujo de Confirmación en Interfaz de Usuario
+1.  **Bloque de Zona de Peligro**: Visible únicamente para administradores en la parte inferior de la página de Personalización Institucional (`/dashboard/configuracion`).
+2.  **Confirmación de Seguridad**: Al presionar "Eliminar Colegio", se le solicita al usuario escribir textualmente el nombre exacto de la institución. Si la cadena no coincide, la operación se cancela de forma inmediata.
+3.  **Destrucción de Credenciales y Redirección**: Tras confirmarse la eliminación mediante la API:
+    - Se borran los tokens de sesión locales mediante `clearSession()`.
+    - Se eliminan las cookies de sesión del navegador.
+    - Se redirige al navegador a la Landing Page principal (`/`).
+
+---
+
+## 9. Seguridad HTTP y Robustecimiento en Producción
+
+### Capa de Servidor (Nginx Reverse Proxy)
+Para salvaguardar la plataforma contra ataques comunes de hijacking de click y de inyección, el archivo de configuración del proxy inverso en el servidor Oracle Cloud (`/etc/nginx/sites-available/scholarflow`) incluye el endurecimiento mediante las siguientes cabeceras de seguridad HTTP:
+
+```nginx
+# Encabezados de Seguridad
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+```
+
+*   **`X-Frame-Options`**: Previene ataques de Clickjacking prohibiendo la renderización del panel de Scholar-Flow dentro de iframes en sitios externos no autorizados.
+*   **`X-Content-Type-Options`**: Impide que el navegador interprete archivos cargados como tipos MIME distintos a los declarados por el servidor.
+*   **`X-XSS-Protection`**: Habilita el filtro de Scripting entre Sitios (XSS) integrado en navegadores heredados para forzar el bloqueo en caso de sospecha de ataque.
+
+
