@@ -8,6 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 interface Course {
     id: string;
     name: string;
+    homeroom_teacher_id: string | null;
 }
 
 interface Professor {
@@ -36,6 +37,8 @@ export default function CoursesPage() {
     // Modals & inputs
     const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
     const [newCourseName, setNewCourseName] = useState("");
+    const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+    const [courseHomeroomId, setCourseHomeroomId] = useState("");
 
     const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
     const [editingSubject, setEditingSubject] = useState<CourseSubject | null>(null);
@@ -135,26 +138,58 @@ export default function CoursesPage() {
         }
     }, [selectedCourse]);
 
-    const handleCreateCourse = async (e: React.FormEvent) => {
+    const openCreateCourseModal = () => {
+        setEditingCourse(null);
+        setNewCourseName("");
+        setCourseHomeroomId("");
+        setIsCourseModalOpen(true);
+    };
+
+    const openEditCourseModal = (course: Course) => {
+        setEditingCourse(course);
+        setNewCourseName(course.name);
+        setCourseHomeroomId(course.homeroom_teacher_id || "");
+        setIsCourseModalOpen(true);
+    };
+
+    const handleSaveCourse = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newCourseName.trim()) return;
+
+        const payload = {
+            name: newCourseName,
+            homeroom_teacher_id: courseHomeroomId || null,
+        };
+
         try {
-            const res = await fetch(`${API_URL}/courses`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newCourseName }),
-            });
-            if (!res.ok) throw new Error("Error al crear curso");
-            const created = await res.json();
+            let res;
+            if (editingCourse) {
+                res = await fetch(`${API_URL}/courses/${editingCourse.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+            } else {
+                res = await fetch(`${API_URL}/courses`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+            }
+
+            if (!res.ok) throw new Error(editingCourse ? "Error al actualizar curso" : "Error al crear curso");
+            const saved = await res.json();
+            
             setNewCourseName("");
+            setCourseHomeroomId("");
             setIsCourseModalOpen(false);
             
-            // Refresh and select new
+            // Refresh and select
             const coursesRes = await fetch(`${API_URL}/courses`);
             if (coursesRes.ok) {
                 const data = await coursesRes.json();
                 setCourses(data);
-                const found = data.find((c: Course) => c.name === created.name);
+                const found = data.find((c: Course) => c.id === saved.id);
                 if (found) setSelectedCourse(found);
             }
         } catch (err: any) {
@@ -271,7 +306,7 @@ export default function CoursesPage() {
                             <BookOpen className="w-5 h-5 text-blue-500" /> Cursos ({courses.length})
                         </h3>
                         <button
-                            onClick={() => setIsCourseModalOpen(true)}
+                            onClick={openCreateCourseModal}
                             className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                             title="Crear Curso"
                         >
@@ -295,13 +330,22 @@ export default function CoursesPage() {
                                     <div
                                         key={course.id}
                                         onClick={() => setSelectedCourse(course)}
-                                        className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left cursor-pointer transition-all duration-200 ${
+                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left cursor-pointer transition-all duration-200 ${
                                             isSelected
                                                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/15"
                                                 : "text-slate-700 hover:bg-slate-50 border border-transparent"
                                         }`}
                                     >
-                                        <span className="font-semibold text-sm">{course.name}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <span className="font-bold text-sm block">{course.name}</span>
+                                            <span className={`text-[10px] block mt-0.5 truncate ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
+                                                {course.homeroom_teacher_id ? (
+                                                    `Jefe: ${professors.find(p => p.id === course.homeroom_teacher_id)?.full_name || "Cargando..."}`
+                                                ) : (
+                                                    "Sin profesor jefe"
+                                                )}
+                                            </span>
+                                        </div>
                                         {isSelected && (
                                             <button
                                                 onClick={(e) => {
@@ -327,8 +371,29 @@ export default function CoursesPage() {
                         <>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-4">
                                 <div>
-                                    <h2 className="text-xl font-bold text-slate-900">{selectedCourse.name}</h2>
-                                    <p className="text-slate-400 text-xs mt-0.5">Asignaturas inscritas en la malla curricular</p>
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-xl font-bold text-slate-900">{selectedCourse.name}</h2>
+                                        <button
+                                            onClick={() => openEditCourseModal(selectedCourse)}
+                                            className="p-1 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
+                                            title="Editar Curso / Profesor Jefe"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <p className="text-xs font-semibold text-slate-500 mt-1 flex items-center gap-1.5">
+                                        <User className="w-3.5 h-3.5 text-blue-500" />
+                                        Profesor Jefe:{" "}
+                                        {selectedCourse.homeroom_teacher_id ? (
+                                            <span className="text-slate-800 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                                {professors.find(p => p.id === selectedCourse.homeroom_teacher_id)?.full_name || "Cargando..."}
+                                            </span>
+                                        ) : (
+                                            <span className="text-amber-600 font-semibold italic bg-amber-50/50 px-2 py-0.5 rounded border border-amber-100/50">
+                                                Sin asignar
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 <button
                                     onClick={openCreateSubjectModal}
@@ -424,13 +489,13 @@ export default function CoursesPage() {
                 </div>
             </div>
 
-            {/* Modal de Crear Curso */}
+            {/* Modal de Crear / Editar Curso */}
             {isCourseModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                <FolderPlus className="w-4 h-4 text-blue-500" /> Crear Nuevo Curso
+                                <FolderPlus className="w-4 h-4 text-blue-500" /> {editingCourse ? "Editar Curso" : "Crear Nuevo Curso"}
                             </h3>
                             <button
                                 onClick={() => setIsCourseModalOpen(false)}
@@ -439,7 +504,7 @@ export default function CoursesPage() {
                                 <XCircle className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleCreateCourse} className="p-5 space-y-4">
+                        <form onSubmit={handleSaveCourse} className="p-5 space-y-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                     Nombre del Curso
@@ -453,6 +518,25 @@ export default function CoursesPage() {
                                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                                 />
                             </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                    Profesor Jefe
+                                </label>
+                                <select
+                                    value={courseHomeroomId}
+                                    onChange={(e) => setCourseHomeroomId(e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white"
+                                >
+                                    <option value="">-- Sin profesor jefe --</option>
+                                    {professors.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.full_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div className="flex items-center justify-end gap-2.5 pt-2">
                                 <button
                                     type="button"
@@ -465,7 +549,7 @@ export default function CoursesPage() {
                                     type="submit"
                                     className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 shadow-md shadow-blue-500/10 transition-colors"
                                 >
-                                    Crear Curso
+                                    {editingCourse ? "Guardar Cambios" : "Crear Curso"}
                                 </button>
                             </div>
                         </form>

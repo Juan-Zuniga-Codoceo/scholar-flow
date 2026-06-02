@@ -44,6 +44,7 @@ class ProfessorCreate(BaseModel):
     is_available: bool = True
     email: Optional[str] = None
     phone: Optional[str] = None
+    parent_attention_hours: Optional[str] = None
 
     @field_validator('rut')
     @classmethod
@@ -60,13 +61,16 @@ class ProfessorUpdate(BaseModel):
     is_available: Optional[bool] = None
     email: Optional[str] = None
     phone: Optional[str] = None
+    parent_attention_hours: Optional[str] = None
 
 # --- Course Schemas ---
 class CourseCreate(BaseModel):
     name: str
+    homeroom_teacher_id: Optional[str] = None
 
 class CourseUpdate(BaseModel):
     name: str
+    homeroom_teacher_id: Optional[str] = None
 
 # --- Course Subject Schemas ---
 class CourseSubjectCreate(BaseModel):

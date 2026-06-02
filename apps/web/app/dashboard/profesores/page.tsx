@@ -18,6 +18,7 @@ interface Professor {
     is_available: boolean;
     email?: string;
     phone?: string;
+    parent_attention_hours?: string;
 }
 
 function ProfessorsPageContent() {
@@ -42,6 +43,7 @@ function ProfessorsPageContent() {
     const [isAvailable, setIsAvailable] = useState(true);
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
+    const [parentAttentionHours, setParentAttentionHours] = useState("");
 
     // Invite to portal modal
     const [inviteProf, setInviteProf]       = useState<Professor | null>(null);
@@ -116,6 +118,7 @@ function ProfessorsPageContent() {
         setIsAvailable(true);
         setEmail("");
         setPhone("");
+        setParentAttentionHours("");
         setIsModalOpen(true);
     };
 
@@ -130,6 +133,7 @@ function ProfessorsPageContent() {
         setIsAvailable(prof.is_available);
         setEmail(prof.email || "");
         setPhone(prof.phone || "");
+        setParentAttentionHours(prof.parent_attention_hours || "");
         setIsModalOpen(true);
     };
 
@@ -150,6 +154,7 @@ function ProfessorsPageContent() {
             is_available: isAvailable,
             email: email || null,
             phone: phone || null,
+            parent_attention_hours: parentAttentionHours || null,
         };
 
         try {
@@ -481,6 +486,20 @@ function ProfessorsPageContent() {
                                 />
                             </div>
 
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                    Horas de Atención a Apoderados (Requerido)
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Ej: Lunes 15:30 - 16:30, Miércoles 09:00 - 10:00"
+                                    value={parentAttentionHours}
+                                    onChange={(e) => setParentAttentionHours(e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                />
+                            </div>
+
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -650,6 +669,19 @@ function ProfessorsPageContent() {
                                                 {viewingProf.phone || "No registrado"}
                                             </span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Horas de Atención a Apoderados */}
+                                <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60 flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <Clock className="w-4 h-4 text-amber-700" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <span className="text-amber-800 block text-[9px] font-black uppercase tracking-wider">Atención a Apoderados</span>
+                                        <span className="font-bold text-slate-800 text-xs block mt-1 leading-relaxed">
+                                            {viewingProf.parent_attention_hours || "No registrado"}
+                                        </span>
                                     </div>
                                 </div>
 

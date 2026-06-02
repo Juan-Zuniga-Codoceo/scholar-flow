@@ -512,14 +512,14 @@ async def create_professor(prof: ProfessorCreate, organization_id: str = Depends
     try:
         query = """
             INSERT INTO professors (
-                organization_id, rut, full_name, subjects, contract_hours, contract_type, assigned_hours, is_available, email, phone
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                organization_id, rut, full_name, subjects, contract_hours, contract_type, assigned_hours, is_available, email, phone, parent_attention_hours
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *;
         """
         params = (
             organization_id, prof.rut, prof.full_name, prof.subjects,
             prof.contract_hours, prof.contract_type, prof.assigned_hours, prof.is_available,
-            prof.email, prof.phone
+            prof.email, prof.phone, prof.parent_attention_hours
         )
         created = execute_query_one(query, params)
         if not created:
@@ -580,6 +580,8 @@ async def get_courses(organization_id: str = Depends(get_organization_id_from_ho
         for c in courses:
             c['id'] = str(c['id'])
             c['organization_id'] = str(c['organization_id'])
+            if c.get('homeroom_teacher_id'):
+                c['homeroom_teacher_id'] = str(c['homeroom_teacher_id'])
         return courses
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
@@ -588,13 +590,15 @@ async def get_courses(organization_id: str = Depends(get_organization_id_from_ho
 async def create_course(course: CourseCreate, organization_id: str = Depends(get_organization_id_from_host)):
     try:
         created = execute_query_one(
-            "INSERT INTO courses (organization_id, name) VALUES (%s, %s) RETURNING *;",
-            (organization_id, course.name)
+            "INSERT INTO courses (organization_id, name, homeroom_teacher_id) VALUES (%s, %s, %s) RETURNING *;",
+            (organization_id, course.name, course.homeroom_teacher_id)
         )
         if not created:
             raise HTTPException(status_code=500, detail="Failed to create course")
         created['id'] = str(created['id'])
         created['organization_id'] = str(created['organization_id'])
+        if created.get('homeroom_teacher_id'):
+            created['homeroom_teacher_id'] = str(created['homeroom_teacher_id'])
         return created
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
@@ -603,13 +607,15 @@ async def create_course(course: CourseCreate, organization_id: str = Depends(get
 async def update_course(course_id: str, course: CourseUpdate, organization_id: str = Depends(get_organization_id_from_host)):
     try:
         updated = execute_query_one(
-            "UPDATE courses SET name = %s WHERE id = %s AND organization_id = %s RETURNING *;",
-            (course.name, course_id, organization_id)
+            "UPDATE courses SET name = %s, homeroom_teacher_id = %s WHERE id = %s AND organization_id = %s RETURNING *;",
+            (course.name, course.homeroom_teacher_id, course_id, organization_id)
         )
         if not updated:
             raise HTTPException(status_code=404, detail="Course not found")
         updated['id'] = str(updated['id'])
         updated['organization_id'] = str(updated['organization_id'])
+        if updated.get('homeroom_teacher_id'):
+            updated['homeroom_teacher_id'] = str(updated['homeroom_teacher_id'])
         return updated
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

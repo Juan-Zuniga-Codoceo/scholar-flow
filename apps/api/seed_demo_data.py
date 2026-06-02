@@ -60,40 +60,40 @@ def seed_data():
                 # 4. Insert Demo Professors (10 professors)
                 print("👨‍🏫 Seeding professors...")
                 professors_data = [
-                    ('f0000000-0000-0000-0000-000000000001', '11.111.111-1', 'Juan Pérez', ['Matemáticas', 'Física'], 44, 'planta', 36, True, 'juan.perez@colegiodemo.cl', '+56 9 1234 5678'),
-                    ('f0000000-0000-0000-0000-000000000002', '22.222.222-2', 'Maria González', ['Lenguaje', 'Historia'], 30, 'honorarios', 24, True, 'maria.gonzalez@colegiodemo.cl', '+56 9 2345 6789'),
-                    ('f0000000-0000-0000-0000-000000000003', '33.333.333-3', 'Carlos Ruiz', ['Biología', 'Química'], 44, 'planta', 30, True, 'carlos.ruiz@colegiodemo.cl', '+56 9 3456 7890'),
-                    ('f0000000-0000-0000-0000-000000000004', '44.444.444-4', 'Ana Lopez', ['Inglés', 'Artes Visuales'], 22, 'reemplazo', 0, True, 'ana.lopez@colegiodemo.cl', '+56 9 4567 8901'),
-                    ('f0000000-0000-0000-0000-000000000005', '55.555.555-5', 'Pedro Soto', ['Educación Física', 'Música'], 40, 'planta', 32, True, 'pedro.soto@colegiodemo.cl', '+56 9 5678 9012'),
-                    ('f0000000-0000-0000-0000-000000000006', '66.666.666-6', 'Sofia Vergara', ['Matemáticas', 'Tecnología'], 44, 'reemplazo', 0, True, 'sofia.vergara@colegiodemo.cl', '+56 9 6789 0123'),
-                    ('f0000000-0000-0000-0000-000000000007', '77.777.777-7', 'Diego Torres', ['Historia', 'Geografía'], 30, 'honorarios', 12, True, 'diego.torres@colegiodemo.cl', '+56 9 7890 1234'),
-                    ('f0000000-0000-0000-0000-000000000008', '88.888.888-8', 'Lucia Mendez', ['Inglés', 'Lenguaje'], 44, 'planta', 40, True, 'lucia.mendez@colegiodemo.cl', '+56 9 8901 2345'),
-                    ('f0000000-0000-0000-0000-000000000009', '99.999.999-9', 'Roberto Diaz', ['Matemáticas', 'Física'], 44, 'reemplazo', 0, True, 'roberto.diaz@colegiodemo.cl', '+56 9 9012 3456'),
-                    ('f0000000-0000-0000-0000-000000000010', '10.100.100-1', 'Andrea Rojas', ['Biología', 'Química'], 44, 'reemplazo', 0, True, 'andrea.rojas@colegiodemo.cl', '+56 9 0123 4567')
+                    ('f0000000-0000-0000-0000-000000000001', '11.111.111-1', 'Juan Pérez', ['Matemáticas', 'Física'], 44, 'planta', 36, True, 'juan.perez@colegiodemo.cl', '+56 9 1234 5678', 'Lunes 15:30 - 16:30'),
+                    ('f0000000-0000-0000-0000-000000000002', '22.222.222-2', 'Maria González', ['Lenguaje', 'Historia'], 30, 'honorarios', 24, True, 'maria.gonzalez@colegiodemo.cl', '+56 9 2345 6789', 'Martes 10:00 - 11:00'),
+                    ('f0000000-0000-0000-0000-000000000003', '33.333.333-3', 'Carlos Ruiz', ['Biología', 'Química'], 44, 'planta', 30, True, 'carlos.ruiz@colegiodemo.cl', '+56 9 3456 7890', 'Miércoles 11:30 - 12:30'),
+                    ('f0000000-0000-0000-0000-000000000004', '44.444.444-4', 'Ana Lopez', ['Inglés', 'Artes Visuales'], 22, 'reemplazo', 0, True, 'ana.lopez@colegiodemo.cl', '+56 9 4567 8901', 'Jueves 14:00 - 15:00'),
+                    ('f0000000-0000-0000-0000-000000000005', '55.555.555-5', 'Pedro Soto', ['Educación Física', 'Música'], 40, 'planta', 32, True, 'pedro.soto@colegiodemo.cl', '+56 9 5678 9012', 'Viernes 09:00 - 10:00'),
+                    ('f0000000-0000-0000-0000-000000000006', '66.666.666-6', 'Sofia Vergara', ['Matemáticas', 'Tecnología'], 44, 'reemplazo', 0, True, 'sofia.vergara@colegiodemo.cl', '+56 9 6789 0123', 'Lunes 09:00 - 10:00'),
+                    ('f0000000-0000-0000-0000-000000000007', '77.777.777-7', 'Diego Torres', ['Historia', 'Geografía'], 30, 'honorarios', 12, True, 'diego.torres@colegiodemo.cl', '+56 9 7890 1234', 'Martes 15:30 - 16:30'),
+                    ('f0000000-0000-0000-0000-000000000008', '88.888.888-8', 'Lucia Mendez', ['Inglés', 'Lenguaje'], 44, 'planta', 40, True, 'lucia.mendez@colegiodemo.cl', '+56 9 8901 2345', 'Miércoles 14:00 - 15:00'),
+                    ('f0000000-0000-0000-0000-000000000009', '99.999.999-9', 'Roberto Diaz', ['Matemáticas', 'Física'], 44, 'reemplazo', 0, True, 'roberto.diaz@colegiodemo.cl', '+56 9 9012 3456', 'Jueves 10:00 - 11:00'),
+                    ('f0000000-0000-0000-0000-000000000010', '10.100.100-1', 'Andrea Rojas', ['Biología', 'Química'], 44, 'reemplazo', 0, True, 'andrea.rojas@colegiodemo.cl', '+56 9 0123 4567', 'Viernes 11:30 - 12:30')
                 ]
-                for p_id, rut, name, subjs, hrs, c_type, ass_hrs, avail, email, phone in professors_data:
+                for p_id, rut, name, subjs, hrs, c_type, ass_hrs, avail, email, phone, att_hrs in professors_data:
                     cur.execute("""
-                        INSERT INTO professors (id, organization_id, rut, full_name, subjects, contract_hours, contract_type, assigned_hours, is_available, email, phone)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (p_id, demo_org_id, rut, name, subjs, hrs, c_type, ass_hrs, avail, email, phone))
+                        INSERT INTO professors (id, organization_id, rut, full_name, subjects, contract_hours, contract_type, assigned_hours, is_available, email, phone, parent_attention_hours)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (p_id, demo_org_id, rut, name, subjs, hrs, c_type, ass_hrs, avail, email, phone, att_hrs))
                 
                 # 5. Insert Demo Courses (8 courses)
                 print("🏫 Seeding courses...")
                 courses_data = [
-                    ('c0000000-0000-0000-0000-000000000001', '1° Medio A'),
-                    ('c0000000-0000-0000-0000-000000000002', '2° Medio B'),
-                    ('c0000000-0000-0000-0000-000000000003', '3° Medio A'),
-                    ('c0000000-0000-0000-0000-000000000004', '4° Medio B'),
-                    ('c0000000-0000-0000-0000-000000000005', '5° Básico A'),
-                    ('c0000000-0000-0000-0000-000000000006', '6° Básico B'),
-                    ('c0000000-0000-0000-0000-000000000007', '7° Básico A'),
-                    ('c0000000-0000-0000-0000-000000000008', '8° Básico B')
+                    ('c0000000-0000-0000-0000-000000000001', '1° Medio A', 'f0000000-0000-0000-0000-000000000001'),
+                    ('c0000000-0000-0000-0000-000000000002', '2° Medio B', 'f0000000-0000-0000-0000-000000000002'),
+                    ('c0000000-0000-0000-0000-000000000003', '3° Medio A', 'f0000000-0000-0000-0000-000000000003'),
+                    ('c0000000-0000-0000-0000-000000000004', '4° Medio B', 'f0000000-0000-0000-0000-000000000004'),
+                    ('c0000000-0000-0000-0000-000000000005', '5° Básico A', 'f0000000-0000-0000-0000-000000000005'),
+                    ('c0000000-0000-0000-0000-000000000006', '6° Básico B', 'f0000000-0000-0000-0000-000000000008'),
+                    ('c0000000-0000-0000-0000-000000000007', '7° Básico A', None),
+                    ('c0000000-0000-0000-0000-000000000008', '8° Básico B', None)
                 ]
-                for c_id, name in courses_data:
+                for c_id, name, homeroom_id in courses_data:
                     cur.execute("""
-                        INSERT INTO courses (id, organization_id, name)
-                        VALUES (%s, %s, %s)
-                    """, (c_id, demo_org_id, name))
+                        INSERT INTO courses (id, organization_id, name, homeroom_teacher_id)
+                        VALUES (%s, %s, %s, %s)
+                    """, (c_id, demo_org_id, name, homeroom_id))
                 
                                 # 6. Insert Course Subjects mapping
                 print("📚 Seeding course subjects...")

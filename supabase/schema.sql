@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS professors (
   contract_type TEXT NOT NULL DEFAULT 'planta',
   check (contract_type in ('planta', 'reemplazo', 'honorarios')),
   assigned_hours INTEGER DEFAULT 0,
+  parent_attention_hours TEXT DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   UNIQUE(organization_id, rut)
 );
@@ -79,6 +80,7 @@ CREATE TABLE IF NOT EXISTS courses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL, -- e.g. "1° Medio A"
+  homeroom_teacher_id UUID REFERENCES professors(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
