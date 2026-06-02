@@ -333,7 +333,7 @@ export default function LandingPage() {
                                     <div>
                                         <h3 className="font-black text-lg text-sf-navy">Planificador Inteligente de Horarios</h3>
                                         <p className="text-xs sm:text-sm text-sf-muted mt-2 font-semibold">
-                                            Asigna salas, profesores y cursos considerando restricciones complejas. Nuestra IA optimiza la carga docente y asegura bloques equilibrados.
+                                            Asigna profesores y cursos considerando restricciones complejas como las Horas de Atención a Apoderados y Jefaturas. Nuestra IA optimiza la carga docente de forma equilibrada.
                                         </p>
                                     </div>
                                 </div>
@@ -418,8 +418,8 @@ export default function LandingPage() {
                             },
                             {
                                 icon: Users,
-                                title: "Portal Docente y Agenda Digital",
-                                desc: "Acceso privado y seguro para profesores. Visualizan sus horarios escolares individuales, registran planificaciones de clases, eventos de agenda y notas de asignaturas."
+                                title: "Jefaturas, Atención a Apoderados y Portal Docente",
+                                desc: "Gestión completa de profesores jefes y horas de atención a apoderados integradas con la IA. Los docentes acceden a su agenda digital, horarios y planificaciones personalizadas."
                             },
                             {
                                 icon: School,

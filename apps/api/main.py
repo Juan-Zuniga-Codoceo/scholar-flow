@@ -1111,7 +1111,8 @@ async def optimize_schedule(req: OptimizeRequest, organization_id: str = Depends
                 "id": str(p["id"]),
                 "full_name": p["full_name"],
                 "subjects": p.get("subjects") or [],
-                "contract_hours": p.get("contract_hours", 44)
+                "contract_hours": p.get("contract_hours", 44),
+                "parent_attention_hours": p.get("parent_attention_hours")
             })
 
         constraints_payload = {
@@ -1136,8 +1137,9 @@ async def optimize_schedule(req: OptimizeRequest, organization_id: str = Depends
         3. Restricción de Profesor Único: Un mismo profesor (professor_id) NO puede dar clases en más de un curso en el mismo día (day_of_week) y bloque (period_number).
         4. Restricción de Bloque Único: Un curso (course_id) NO puede tener más de una materia en el mismo día y bloque.
         5. Evitar colisión de restricciones: No programes a un profesor en los bloques indicados en 'forbidden_teacher_slots'.
-        6. Preferencia pedagógica: Intenta distribuir las horas de una misma asignatura a lo largo de la semana de forma uniforme (ej: si son 4 horas, repartir en 2 clases de 2 horas o 4 de 1 hora, evitar poner las 4 horas seguidas en el mismo día a menos que no haya otra opción).
-        7. Evitar ventanas: Intenta agrupar las clases de los profesores consecutivamente para evitar que tengan horas libres intermedias en su jornada.
+        6. Restricción de Atención a Apoderados (CRÍTICA): No programes clases para un profesor en los días y bloques horarios que coincidan con sus 'parent_attention_hours' (ej: si dice 'Lunes bloque 4' o 'Lunes 15:30 - 16:30', no debe asignársele clase alguna a ese docente en ese día y bloque). Deduce de forma inteligente a qué día de la semana (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes) y número de bloque (period_number de 1 a 8) corresponde la descripción en 'parent_attention_hours'.
+        7. Preferencia pedagógica: Intenta distribuir las horas de una misma asignatura a lo largo de la semana de forma uniforme (ej: si son 4 horas, repartir en 2 clases de 2 horas o 4 de 1 hora, evitar poner las 4 horas seguidas en el mismo día a menos que no haya otra opción).
+        8. Evitar ventanas: Intenta agrupar las clases de los profesores consecutivamente para evitar que tengan horas libres intermedias en su jornada.
 
         Retorna EXCLUSIVAMENTE un objeto JSON con el siguiente esquema:
         {
