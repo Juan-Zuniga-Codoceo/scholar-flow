@@ -210,4 +210,12 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     - **Panel de Profesores (`/dashboard/profesores`)**: Al agregar o editar a un docente en la nómina, el sistema obliga al administrador (mediante validaciones HTML5 `required` y validaciones en esquema) a registrar las horas de atención a apoderados correspondientes.
     - **Ficha de Detalle**: Al hacer clic en un docente para ver su ficha completa, se renderiza una tarjeta destacada en tono ámbar detallando sus horas de atención registradas.
 
+### Integración en el Generador de Horarios por IA (Gemini)
+*   **Envío de Restricciones**: Al llamar al endpoint `/optimize`, los datos enviados a la IA incluyen la clave `"parent_attention_hours"` para cada profesor.
+*   **Restricción de Planificación**: Se actualizó el system prompt del generador (`SYSTEM_OPTIMIZE_PROMPT`) en `main.py` con una regla de negocio de prioridad crítica. El modelo Gemini analiza de forma semántica la descripción en texto libre y deduce inteligentemente el día de la semana y bloque a liberar, garantizando que el profesor nunca sea asignado para dictar clases en el transcurso de sus horas de atención a apoderados.
+
+### Actualización de Landing Page
+*   Se actualizó la sección de características e introducción del generador inteligente de horarios en `apps/web/app/page.tsx` para reflejar la incorporación de las horas de atención a apoderados y jefaturas como restricciones clave de la IA.
+
+
 
