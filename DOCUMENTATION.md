@@ -192,4 +192,22 @@ add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 *   **`X-Content-Type-Options`**: Impide que el navegador interprete archivos cargados como tipos MIME distintos a los declarados por el servidor.
 *   **`X-XSS-Protection`**: Habilita el filtro de Scripting entre Sitios (XSS) integrado en navegadores heredados para forzar el bloqueo en caso de sospecha de ataque.
 
+---
+
+## 10. Jefaturas de Curso y Horarios de Atención a Apoderados
+
+### Lógica de Profesor Jefe (Homeroom Teacher)
+*   **Modelo de Datos**: Se añadió la columna `homeroom_teacher_id` (UUID) en la tabla `courses` como una clave foránea referenciando a `professors(id) ON DELETE SET NULL`. De esta forma, si un profesor es removido del sistema, el curso no se elimina, sino que su jefatura simplemente vuelve al estado "Sin asignar".
+*   **Controladores Backend**: Las rutas CRUD de cursos (`GET /courses`, `POST /courses` y `PUT /courses/{course_id}`) se actualizaron en `main.py` para leer y guardar la jefatura del curso.
+*   **Interfaz de Usuario**:
+    - **Panel de Cursos (`/dashboard/cursos`)**: Ahora permite visualizar directamente qué profesor jefe lidera cada curso en la barra lateral.
+    - **Edición y Creación**: Se incorporó un modal unificado para la creación y edición del curso, el cual incluye un selector para asignar o cambiar dinámicamente al Profesor Jefe de la nómina de profesores activos.
+
+### Lógica de Horas de Atención a Apoderados (Parent Attention Hours)
+*   **Modelo de Datos**: Se añadió la columna `parent_attention_hours` (TEXT) a la tabla `professors` para almacenar la planificación horaria de atención a apoderados.
+*   **Controladores Backend**: Las rutas CRUD de profesores se actualizaron para almacenar e iterar sobre este nuevo campo.
+*   **Interfaz de Usuario**:
+    - **Panel de Profesores (`/dashboard/profesores`)**: Al agregar o editar a un docente en la nómina, el sistema obliga al administrador (mediante validaciones HTML5 `required` y validaciones en esquema) a registrar las horas de atención a apoderados correspondientes.
+    - **Ficha de Detalle**: Al hacer clic en un docente para ver su ficha completa, se renderiza una tarjeta destacada en tono ámbar detallando sus horas de atención registradas.
+
 
